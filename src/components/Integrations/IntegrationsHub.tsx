@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TeamIntegrations,
   GoogleDriveDoc,
@@ -76,12 +76,47 @@ export default function IntegrationsHub({
   const [isEditingVercel, setIsEditingVercel] = useState(false);
   const [vercelUrl, setVercelUrl] = useState(integrations.vercel?.deploymentUrl || 'https://sistema-nexus-gov.vercel.app');
 
+  const [isEditingDriveFolder, setIsEditingDriveFolder] = useState(false);
+  const [driveFolderUrl, setDriveFolderUrl] = useState(
+    integrations.googleDrive?.folderUrl && !integrations.googleDrive.folderUrl.includes('nexus-govtech-2026')
+      ? integrations.googleDrive.folderUrl
+      : 'https://drive.google.com/drive/my-drive'
+  );
+
   const [docCategoryFilter, setDocCategoryFilter] = useState<string>('all');
+
+  useEffect(() => {
+    if (integrations.googleDrive?.folderUrl) {
+      setDriveFolderUrl(integrations.googleDrive.folderUrl);
+    }
+    if (integrations.github?.repoUrl) {
+      setGithubRepoUrl(integrations.github.repoUrl);
+    }
+    if (integrations.vercel?.deploymentUrl) {
+      setVercelUrl(integrations.vercel.deploymentUrl);
+    }
+  }, [integrations]);
 
   const copyToClipboard = (text: string, key: string) => {
     navigator.clipboard.writeText(text);
     setCopiedKey(key);
     setTimeout(() => setCopiedKey(null), 2200);
+  };
+
+  const handleSaveDriveFolder = async () => {
+    try {
+      await updateIntegrations({
+        googleDrive: {
+          folderUrl: driveFolderUrl,
+          status: 'connected',
+        },
+        updatedBy: activeMember.name,
+      });
+      setIsEditingDriveFolder(false);
+      onRefresh();
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   const handleSyncGit = async () => {
@@ -483,36 +518,78 @@ export default function IntegrationsHub({
                 </div>
               </div>
 
-              <button
-                onClick={() => setIsAddDocOpen(true)}
-                className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition"
-              >
-                <Plus className="w-3 h-3" />
-                <span>Adicionar</span>
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsEditingDriveFolder(!isEditingDriveFolder)}
+                  className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition"
+                >
+                  {isEditingDriveFolder ? 'Cancelar' : 'Editar'}
+                </button>
+                <span className="text-slate-700">•</span>
+                <button
+                  onClick={() => setIsAddDocOpen(true)}
+                  className="flex items-center gap-1 text-[11px] font-semibold text-emerald-400 hover:text-emerald-300 transition"
+                >
+                  <Plus className="w-3 h-3" />
+                  <span>Adicionar</span>
+                </button>
+              </div>
             </div>
 
-            {/* Folder link banner */}
-            <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between gap-3">
-              <div className="min-w-0">
-                <div className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
-                  <Folder className="w-3 h-3 text-amber-400" />
-                  Pasta Principal da Equipe
+            {/* Edit Folder Form */}
+            {isEditingDriveFolder ? (
+              <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-3">
+                <div>
+                  <label className="block text-[11px] font-semibold text-slate-300 mb-1">
+                    Link da Pasta Compartilhada no Google Drive
+                  </label>
+                  <input
+                    type="url"
+                    value={driveFolderUrl}
+                    onChange={(e) => setDriveFolderUrl(e.target.value)}
+                    placeholder="https://drive.google.com/drive/folders/..."
+                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white focus:outline-none focus:border-amber-400"
+                  />
+                  <p className="text-[10px] text-slate-400 mt-1 leading-relaxed">
+                    💡 Dica: No Google Drive, crie uma pasta, clique com o botão direito em <strong>Compartilhar &gt; Copiar link</strong> e cole aqui para toda a equipe acessar diretamente.
+                  </p>
                 </div>
-                <div className="text-xs font-semibold text-slate-200 truncate mt-0.5">
-                  Nexus GovTech 2026 - Repositório Central
-                </div>
+                <button
+                  onClick={handleSaveDriveFolder}
+                  className="w-full bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 py-1.5 rounded-lg text-xs font-semibold text-white transition shadow-md"
+                >
+                  Salvar Pasta para Toda a Equipe
+                </button>
               </div>
-              <a
-                href={integrations.googleDrive?.folderUrl || 'https://drive.google.com/drive/folders/nexus-govtech-2026'}
-                target="_blank"
-                rel="noreferrer"
-                className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5 flex-shrink-0"
-              >
-                <span>Acessar</span>
-                <ExternalLink className="w-3 h-3" />
-              </a>
-            </div>
+            ) : (
+              /* Folder link banner */
+              <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-[10px] uppercase font-bold text-slate-400 flex items-center gap-1">
+                    <Folder className="w-3 h-3 text-amber-400" />
+                    Pasta Principal da Equipe
+                  </div>
+                  <div className="text-xs font-semibold text-slate-200 truncate mt-0.5">
+                    {integrations.googleDrive?.folderUrl?.includes('drive.google.com/drive/folders')
+                      ? 'Pasta Compartilhada da Equipe'
+                      : 'Meu Google Drive (Root)'}
+                  </div>
+                </div>
+                <a
+                  href={
+                    integrations.googleDrive?.folderUrl && !integrations.googleDrive.folderUrl.includes('nexus-govtech-2026')
+                      ? integrations.googleDrive.folderUrl
+                      : 'https://drive.google.com/drive/my-drive'
+                  }
+                  target="_blank"
+                  rel="noreferrer"
+                  className="px-2.5 py-1.5 rounded-lg bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 text-xs font-semibold border border-amber-500/30 transition flex items-center gap-1.5 flex-shrink-0"
+                >
+                  <span>Acessar</span>
+                  <ExternalLink className="w-3 h-3" />
+                </a>
+              </div>
+            )}
 
             {/* Category filter pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none py-1">

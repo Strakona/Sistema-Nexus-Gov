@@ -1,0 +1,92 @@
+{
+  "github": {
+    "enabled": true,
+    "repoUrl": "https://github.com/Strakona/Sistema-Nexus-Gov",
+    "repoName": "Strakona/Sistema-Nexus-Gov",
+    "branch": "main",
+    "status": "connected",
+    "lastSyncedAt": "2026-10-24T23:30:31.225Z",
+    "latestCommit": {
+      "hash": "d6f312c",
+      "message": "feat: add team integrations hub for GitHub, Google Drive and Vercel with real-time sync",
+      "author": "Strakona",
+      "date": "Sat Oct 24 20:30:16 2026 -0300"
+    },
+    "starsCount": 1,
+    "openIssuesCount": 0,
+    "recentCommits": [
+      {
+        "hash": "d6f312c",
+        "message": "feat: add team integrations hub for GitHub, Google Drive and Vercel with real-time sync",
+        "author": "Strakona",
+        "date": "Sat Oct 24 20:30:16 2026 -0300"
+      },
+      {
+        "hash": "ace58be",
+        "message": "feat: initial commit - Nexus GovTech platform",
+        "author": "Strakona",
+        "date": "Sat Oct 24 19:59:13 2026 -0300"
+      }
+    ]
+  },
+  "googleDrive": {
+    "enabled": true,
+    "folderUrl": "https://drive.google.com/drive/folders/1r0UAE3NtBsjPr89_ImYTw_fd_8EodsFa?usp=sharing",
+    "status": "connected",
+    "sharedDocs": [
+      {
+        "id": "doc-1",
+        "title": "Pitch Deck Oficial - 3 Minutos (GovTech 2026)",
+        "type": "presentation",
+        "url": "https://slides.new",
+        "description": "Apresentação de slides alinhados aos 7 critérios do edital SEBRAE/CMCTIC",
+        "category": "pitch",
+        "addedBy": "Bruna (UX)",
+        "updatedAt": "Hoje"
+      },
+      {
+        "id": "doc-2",
+        "title": "Pesquisa com Cidadãos & Servidores (Cianorte)",
+        "type": "spreadsheet",
+        "url": "https://sheets.new",
+        "description": "Planilha com dados quantitativos e respostas do formulário relâmpago",
+        "category": "validation",
+        "addedBy": "Bruna (UX)",
+        "updatedAt": "Hoje"
+      },
+      {
+        "id": "doc-3",
+        "title": "Pasta Principal da Equipe no Google Drive",
+        "type": "folder",
+        "url": "https://drive.google.com/drive/my-drive",
+        "description": "Pasta de ativos, logos, diagramas e fotos de entrevistas",
+        "category": "general",
+        "addedBy": "Caio (Tech)",
+        "updatedAt": "Hoje"
+      },
+      {
+        "id": "doc-4",
+        "title": "Regulamento Oficial & Critérios de Avaliação.pdf",
+        "type": "pdf",
+        "url": "/assets/aistudio/Regulamento_Hackathon_-_GovTech.docx__1__276b651d.pdf",
+        "description": "Regras da banca avaliadora, pesos de notas e tempo de apresentação",
+        "category": "regulation",
+        "addedBy": "Sistema",
+        "updatedAt": "Hoje"
+      }
+    ]
+  },
+  "vercel": {
+    "enabled": true,
+    "projectName": "sistema-nexus-gov",
+    "deploymentUrl": "https://sistema-nexus-gov.vercel.app",
+    "previewUrl": "https://sistema-nexus-gov.vercel.app",
+    "environment": "Production",
+    "status": "ready",
+    "branch": "main",
+    "commitHash": "d6f312c",
+    "lastDeployedAt": "2026-10-24T23:29:44.381Z"
+  },
+  "lastUpdatedBy": "Equipe",
+  "lastUpdatedAt": "2026-10-24T23:39:15.064Z"
+}

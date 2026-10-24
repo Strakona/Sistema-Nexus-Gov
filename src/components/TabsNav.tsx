@@ -1,7 +1,7 @@
 import React from 'react';
-import { Code2, CheckSquare, MessageSquare, ClipboardCheck, Presentation, Layers } from 'lucide-react';
+import { Code2, CheckSquare, MessageSquare, ClipboardCheck, Presentation, Layers, Share2 } from 'lucide-react';
 
-export type TabType = 'code' | 'tasks' | 'chat' | 'validation' | 'pitch';
+export type TabType = 'code' | 'tasks' | 'chat' | 'validation' | 'pitch' | 'integrations';
 
 interface TabsNavProps {
   activeTab: TabType;
@@ -17,6 +17,13 @@ export default function TabsNav({
   pendingTasksCount = 0,
 }: TabsNavProps) {
   const tabs = [
+    {
+      id: 'integrations' as TabType,
+      label: 'Conexões & Deploy',
+      subtitle: 'GitHub, Google Drive & Vercel',
+      icon: Share2,
+      badge: 'Hub Equipe',
+    },
     {
       id: 'code' as TabType,
       label: 'Code Hub & Versionamento',

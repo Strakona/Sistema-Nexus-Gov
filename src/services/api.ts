@@ -118,3 +118,59 @@ export async function evaluateProjectWithAi(projectSummaryData: {
   });
   return res.json();
 }
+
+export async function fetchIntegrations() {
+  const res = await fetch('/api/integrations');
+  if (!res.ok) throw new Error('Falha ao carregar integrações');
+  return res.json();
+}
+
+export async function updateIntegrations(data: any) {
+  const res = await fetch('/api/integrations', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(data),
+  });
+  return res.json();
+}
+
+export async function syncGitCommits() {
+  const res = await fetch('/api/integrations/sync-git', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+  return res.json();
+}
+
+export async function addDriveDocument(doc: {
+  title: string;
+  type: string;
+  url: string;
+  description?: string;
+  category?: string;
+  addedBy?: string;
+}) {
+  const res = await fetch('/api/integrations/drive/docs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(doc),
+  });
+  return res.json();
+}
+
+export async function deleteDriveDocument(id: string) {
+  const res = await fetch(`/api/integrations/drive/docs/${id}`, {
+    method: 'DELETE',
+  });
+  return res.json();
+}
+
+export async function pingVercelDeployment(url?: string) {
+  const res = await fetch('/api/integrations/vercel/ping', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url }),
+  });
+  return res.json();
+}
+

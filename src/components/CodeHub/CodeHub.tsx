@@ -17,6 +17,8 @@ import {
   Copy,
   Check,
   Split,
+  Github,
+  ExternalLink,
 } from 'lucide-react';
 
 interface CodeHubProps {
@@ -192,11 +194,22 @@ export default function ${newFilePath.split('/').pop()?.replace('.tsx', '') || '
             <Code2 className="w-5 h-5" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-slate-100 flex items-center gap-2">
+            <h2 className="text-base font-bold text-slate-100 flex flex-wrap items-center gap-2">
               <span>Code Hub & Integration Weaver</span>
               <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 font-mono border border-emerald-500/30">
                 Tempo Real Sync
               </span>
+              <a
+                href="https://github.com/Strakona/Sistema-Nexus-Gov"
+                target="_blank"
+                rel="noreferrer"
+                className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-[10px] text-cyan-300 border border-slate-700 transition"
+                title="Abrir repositório no GitHub"
+              >
+                <Github className="w-3 h-3 text-white" />
+                <span className="font-mono">Strakona/Sistema-Nexus-Gov</span>
+                <ExternalLink className="w-2.5 h-2.5 text-slate-400" />
+              </a>
             </h2>
             <p className="text-xs text-slate-400">
               Desenvolva módulos, versione alterações em tempo real e una os componentes da equipe no MVP.

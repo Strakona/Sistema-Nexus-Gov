@@ -123,3 +123,64 @@ export interface PitchSlide {
   speakerNotes: string;
   metricHighlight?: string;
 }
+
+export interface GitHubIntegration {
+  enabled: boolean;
+  repoUrl: string;
+  repoName: string;
+  branch: string;
+  status: 'connected' | 'syncing' | 'error' | 'disconnected';
+  lastSyncedAt?: string;
+  latestCommit?: {
+    hash: string;
+    message: string;
+    author: string;
+    date: string;
+  };
+  starsCount?: number;
+  openIssuesCount?: number;
+  recentCommits?: Array<{
+    hash: string;
+    message: string;
+    author: string;
+    date: string;
+  }>;
+}
+
+export interface GoogleDriveDoc {
+  id: string;
+  title: string;
+  type: 'folder' | 'document' | 'presentation' | 'spreadsheet' | 'pdf' | 'link';
+  url: string;
+  description?: string;
+  category?: 'pitch' | 'validation' | 'regulation' | 'general' | 'design';
+  addedBy?: string;
+  updatedAt?: string;
+}
+
+export interface GoogleDriveIntegration {
+  enabled: boolean;
+  folderUrl: string;
+  status: 'connected' | 'disconnected';
+  sharedDocs: GoogleDriveDoc[];
+}
+
+export interface VercelIntegration {
+  enabled: boolean;
+  projectName: string;
+  deploymentUrl: string;
+  previewUrl?: string;
+  environment: 'Production' | 'Preview';
+  status: 'ready' | 'building' | 'error' | 'queued' | 'disconnected';
+  lastDeployedAt?: string;
+  branch?: string;
+  commitHash?: string;
+}
+
+export interface TeamIntegrations {
+  github: GitHubIntegration;
+  googleDrive: GoogleDriveIntegration;
+  vercel: VercelIntegration;
+  lastUpdatedBy?: string;
+  lastUpdatedAt?: string;
+}

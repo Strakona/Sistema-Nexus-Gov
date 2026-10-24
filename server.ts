@@ -4,6 +4,7 @@ import dotenv from 'dotenv';
 import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
+import { execSync } from 'child_process';
 
 dotenv.config();
 
@@ -287,6 +288,150 @@ let mentorFeedbacks = [
   },
 ];
 
+// Local Git Commit Reader for Team GitHub Hub
+function getLocalGitCommits() {
+  try {
+    const raw = execSync('git log -n 5 --pretty=format:"%h||%s||%an||%ad"', {
+      cwd: __dirname,
+      encoding: 'utf-8',
+      timeout: 3000,
+    });
+    const lines = raw.trim().split('\n').filter(Boolean);
+    const commits = lines.map((line) => {
+      const parts = line.split('||');
+      return {
+        hash: parts[0]?.trim() || '',
+        message: parts[1]?.trim() || '',
+        author: parts[2]?.trim() || '',
+        date: parts[3]?.trim() || '',
+      };
+    });
+    if (commits.length > 0) return commits;
+  } catch (e) {
+    // Fallback if git binary not in direct path
+  }
+  return [
+    {
+      hash: 'ace58be',
+      message: 'feat: initial commit - Nexus GovTech platform',
+      author: 'Strakona',
+      date: new Date().toISOString(),
+    },
+  ];
+}
+
+const initialGitCommits = getLocalGitCommits();
+const INTEGRATIONS_FILE = path.join(__dirname, 'data', 'integrations.json');
+
+let teamIntegrations: any = {
+  github: {
+    enabled: true,
+    repoUrl: 'https://github.com/Strakona/Sistema-Nexus-Gov',
+    repoName: 'Strakona/Sistema-Nexus-Gov',
+    branch: 'main',
+    status: 'connected',
+    lastSyncedAt: new Date().toISOString(),
+    latestCommit: initialGitCommits[0] || {
+      hash: 'ace58be',
+      message: 'feat: initial commit - Nexus GovTech platform',
+      author: 'Strakona',
+      date: new Date().toISOString(),
+    },
+    starsCount: 1,
+    openIssuesCount: 0,
+    recentCommits: initialGitCommits,
+  },
+  googleDrive: {
+    enabled: true,
+    folderUrl: 'https://drive.google.com/drive/folders/nexus-govtech-2026',
+    status: 'connected',
+    sharedDocs: [
+      {
+        id: 'doc-1',
+        title: 'Pitch Deck Oficial - 3 Minutos (GovTech 2026)',
+        type: 'presentation',
+        url: 'https://docs.google.com/presentation/d/1nexus-pitch-deck-cianorte',
+        description: 'Apresentação de 10 slides alinhados aos 7 critérios do edital SEBRAE/CMCTIC',
+        category: 'pitch',
+        addedBy: 'Bruna (UX)',
+        updatedAt: 'Hoje',
+      },
+      {
+        id: 'doc-2',
+        title: 'Pesquisa com Cidadãos & Servidores (Cianorte)',
+        type: 'spreadsheet',
+        url: 'https://docs.google.com/spreadsheets/d/1nexus-validacao-pesquisa-ux',
+        description: 'Dados quantitativos e 45 respostas do formulário relâmpago de validação',
+        category: 'validation',
+        addedBy: 'Bruna (UX)',
+        updatedAt: 'Hoje',
+      },
+      {
+        id: 'doc-3',
+        title: 'Pasta Central de Ativos da Equipe Nexus DC Br',
+        type: 'folder',
+        url: 'https://drive.google.com/drive/folders/nexus-govtech-2026',
+        description: 'Logos, diagramas de arquitetura, fotos de campo e áudios de entrevistas',
+        category: 'general',
+        addedBy: 'Caio (Tech)',
+        updatedAt: 'Hoje',
+      },
+      {
+        id: 'doc-4',
+        title: 'Regulamento Oficial & Critérios de Avaliação.pdf',
+        type: 'pdf',
+        url: '/assets/aistudio/Regulamento_Hackathon_-_GovTech.docx__1__276b651d.pdf',
+        description: 'Regras da banca avaliadora, pesos de notas e tempo de apresentação',
+        category: 'regulation',
+        addedBy: 'Sistema',
+        updatedAt: 'Hoje',
+      },
+    ],
+  },
+  vercel: {
+    enabled: true,
+    projectName: 'sistema-nexus-gov',
+    deploymentUrl: 'https://sistema-nexus-gov.vercel.app',
+    previewUrl: 'https://sistema-nexus-gov.vercel.app',
+    environment: 'Production',
+    status: 'ready',
+    branch: 'main',
+    commitHash: initialGitCommits[0]?.hash || 'ace58be',
+    lastDeployedAt: new Date().toISOString(),
+  },
+  lastUpdatedBy: 'Sistema Nexus',
+  lastUpdatedAt: new Date().toISOString(),
+};
+
+// Carregar dados salvos em disco se existirem
+if (fs.existsSync(INTEGRATIONS_FILE)) {
+  try {
+    const rawData = fs.readFileSync(INTEGRATIONS_FILE, 'utf-8');
+    const parsed = JSON.parse(rawData);
+    teamIntegrations = {
+      ...teamIntegrations,
+      ...parsed,
+      github: { ...teamIntegrations.github, ...(parsed.github || {}) },
+      googleDrive: { ...teamIntegrations.googleDrive, ...(parsed.googleDrive || {}) },
+      vercel: { ...teamIntegrations.vercel, ...(parsed.vercel || {}) },
+    };
+  } catch (err) {
+    console.error('Error loading integrations file:', err);
+  }
+}
+
+function saveIntegrationsToDisk() {
+  try {
+    const dataDir = path.dirname(INTEGRATIONS_FILE);
+    if (!fs.existsSync(dataDir)) {
+      fs.mkdirSync(dataDir, { recursive: true });
+    }
+    fs.writeFileSync(INTEGRATIONS_FILE, JSON.stringify(teamIntegrations, null, 2), 'utf-8');
+  } catch (err) {
+    console.error('Error saving integrations:', err);
+  }
+}
+
 // SSE Clients for Real-Time Sync
 const sseClients: Response[] = [];
 
@@ -307,7 +452,88 @@ app.get('/api/state', (req: Request, res: Response) => {
     codeFiles,
     codeCommits,
     mentorFeedbacks,
+    integrations: teamIntegrations,
   });
+});
+
+// Integrations Endpoints
+app.get('/api/integrations', (req: Request, res: Response) => {
+  res.json(teamIntegrations);
+});
+
+app.put('/api/integrations', (req: Request, res: Response) => {
+  const { github, googleDrive, vercel, updatedBy } = req.body;
+  if (github) teamIntegrations.github = { ...teamIntegrations.github, ...github };
+  if (googleDrive) teamIntegrations.googleDrive = { ...teamIntegrations.googleDrive, ...googleDrive };
+  if (vercel) teamIntegrations.vercel = { ...teamIntegrations.vercel, ...vercel };
+  if (updatedBy) teamIntegrations.lastUpdatedBy = updatedBy;
+  teamIntegrations.lastUpdatedAt = new Date().toISOString();
+
+  saveIntegrationsToDisk();
+  broadcastStateUpdate('INTEGRATIONS_UPDATED', teamIntegrations);
+  res.json({ success: true, integrations: teamIntegrations });
+});
+
+app.post('/api/integrations/sync-git', (req: Request, res: Response) => {
+  const commits = getLocalGitCommits();
+  teamIntegrations.github.recentCommits = commits;
+  if (commits.length > 0) {
+    teamIntegrations.github.latestCommit = commits[0];
+    teamIntegrations.github.status = 'connected';
+    teamIntegrations.vercel.commitHash = commits[0].hash;
+  }
+  teamIntegrations.github.lastSyncedAt = new Date().toISOString();
+  saveIntegrationsToDisk();
+  broadcastStateUpdate('INTEGRATIONS_UPDATED', teamIntegrations);
+  res.json({ success: true, integrations: teamIntegrations });
+});
+
+app.post('/api/integrations/drive/docs', (req: Request, res: Response) => {
+  const { title, type, url, description, category, addedBy } = req.body;
+  if (!title || !url) {
+    return res.status(400).json({ error: 'Título e URL são obrigatórios' });
+  }
+  const newDoc = {
+    id: `doc-${Date.now()}`,
+    title,
+    type: type || 'link',
+    url,
+    description: description || '',
+    category: category || 'general',
+    addedBy: addedBy || 'Equipe',
+    updatedAt: new Date().toLocaleDateString('pt-BR'),
+  };
+  teamIntegrations.googleDrive.sharedDocs.unshift(newDoc);
+  saveIntegrationsToDisk();
+  broadcastStateUpdate('INTEGRATIONS_UPDATED', teamIntegrations);
+  res.json({ success: true, doc: newDoc, integrations: teamIntegrations });
+});
+
+app.delete('/api/integrations/drive/docs/:id', (req: Request, res: Response) => {
+  const { id } = req.params;
+  teamIntegrations.googleDrive.sharedDocs = teamIntegrations.googleDrive.sharedDocs.filter((d: any) => d.id !== id);
+  saveIntegrationsToDisk();
+  broadcastStateUpdate('INTEGRATIONS_UPDATED', teamIntegrations);
+  res.json({ success: true, integrations: teamIntegrations });
+});
+
+app.post('/api/integrations/vercel/ping', async (req: Request, res: Response) => {
+  const targetUrl = req.body.url || teamIntegrations.vercel.deploymentUrl;
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const start = Date.now();
+    const response = await fetch(targetUrl, { signal: controller.signal });
+    clearTimeout(timeout);
+    const latency = Date.now() - start;
+    teamIntegrations.vercel.status = response.ok ? 'ready' : 'error';
+    teamIntegrations.vercel.lastDeployedAt = new Date().toISOString();
+    saveIntegrationsToDisk();
+    broadcastStateUpdate('INTEGRATIONS_UPDATED', teamIntegrations);
+    res.json({ success: true, ok: response.ok, status: response.status, latency });
+  } catch (err: any) {
+    res.json({ success: false, error: err.message || 'Host indisponível no momento' });
+  }
 });
 
 // Team members update endpoint

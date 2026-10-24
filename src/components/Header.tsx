@@ -1,20 +1,24 @@
 import React, { useState, useEffect } from 'react';
-import { TeamMember, RoleType } from '../types';
-import { ShieldCheck, Clock, Users, Sparkles, Award, ExternalLink, Activity } from 'lucide-react';
+import { TeamMember, RoleType, TeamIntegrations } from '../types';
+import { ShieldCheck, Clock, Users, Sparkles, Award, ExternalLink, Activity, Github, HardDrive, Triangle, Share2 } from 'lucide-react';
 
 interface HeaderProps {
   teamMembers: TeamMember[];
   activeMember: TeamMember;
+  integrations?: TeamIntegrations;
   onSelectMember: (member: TeamMember) => void;
   onOpenAiEvaluator: () => void;
+  onOpenIntegrations?: () => void;
   onReassignRoles?: () => void;
 }
 
 export default function Header({
   teamMembers,
   activeMember,
+  integrations,
   onSelectMember,
   onOpenAiEvaluator,
+  onOpenIntegrations,
   onReassignRoles,
 }: HeaderProps) {
   const [time, setTime] = useState(new Date().toLocaleTimeString('pt-BR'));
@@ -90,6 +94,43 @@ export default function Header({
                 <span className="font-semibold text-slate-200">MVP e Testagem / Prototipagem</span>
               </div>
             </div>
+          </div>
+
+          {/* Quick Team Hub Connectors */}
+          <div className="hidden xl:flex items-center gap-1.5 bg-slate-900/60 p-1 rounded-xl border border-slate-800/80">
+            <button
+              onClick={onOpenIntegrations}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] text-slate-300 transition"
+              title="Ver repositório GitHub da equipe"
+            >
+              <Github className="w-3.5 h-3.5 text-white" />
+              <span className="font-mono text-[10px] text-cyan-300 font-bold truncate max-w-[110px]">
+                {integrations?.github?.repoName?.split('/')[1] || 'Sistema-Nexus-Gov'}
+              </span>
+            </button>
+
+            <span className="text-slate-700">•</span>
+
+            <button
+              onClick={onOpenIntegrations}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] text-slate-300 transition"
+              title="Ver arquivos do Google Drive da equipe"
+            >
+              <HardDrive className="w-3.5 h-3.5 text-amber-400" />
+              <span className="text-[10px] text-amber-200 font-semibold">Drive ({integrations?.googleDrive?.sharedDocs?.length || 4})</span>
+            </button>
+
+            <span className="text-slate-700">•</span>
+
+            <button
+              onClick={onOpenIntegrations}
+              className="flex items-center gap-1.5 px-2 py-1 rounded-lg hover:bg-slate-800 text-[11px] text-slate-300 transition"
+              title="Ver deploy em produção na Vercel"
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <Triangle className="w-3 h-3 text-white fill-white" />
+              <span className="text-[10px] text-emerald-300 font-semibold">Vercel</span>
+            </button>
           </div>
 
           {/* User Selector & AI Evaluator Button */}

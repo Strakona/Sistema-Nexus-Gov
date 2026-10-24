@@ -9,8 +9,9 @@ import TaskBoard from './components/TaskBoard/TaskBoard';
 import TeamChat from './components/TeamChat/TeamChat';
 import ValidationSuite from './components/ValidationSuite/ValidationSuite';
 import PitchBuilder from './components/PitchBuilder/PitchBuilder';
+import IntegrationsHub from './components/Integrations/IntegrationsHub';
 import AIEvaluatorModal from './components/AIEvaluatorModal';
-import { TeamMember, Task, ChatMessage, CodeFile, CodeCommit, MentorFeedback } from './types';
+import { TeamMember, Task, ChatMessage, CodeFile, CodeCommit, MentorFeedback, TeamIntegrations } from './types';
 import { fetchAppState } from './services/api';
 
 export default function App() {
@@ -34,6 +35,7 @@ export default function App() {
   const [codeFiles, setCodeFiles] = useState<CodeFile[]>([]);
   const [codeCommits, setCodeCommits] = useState<CodeCommit[]>([]);
   const [mentorFeedbacks, setMentorFeedbacks] = useState<MentorFeedback[]>([]);
+  const [integrations, setIntegrations] = useState<TeamIntegrations | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Load state from Express backend
@@ -49,6 +51,9 @@ export default function App() {
       setCodeFiles(data.codeFiles || []);
       setCodeCommits(data.codeCommits || []);
       setMentorFeedbacks(data.mentorFeedbacks || []);
+      if (data.integrations) {
+        setIntegrations(data.integrations);
+      }
     } catch (err) {
       console.error('Error loading app state:', err);
     } finally {
@@ -77,6 +82,8 @@ export default function App() {
           loadState();
         } else if (data.type === 'TEAM_UPDATED') {
           loadState();
+        } else if (data.type === 'INTEGRATIONS_UPDATED') {
+          setIntegrations(data.payload);
         }
       } catch (e) {
         console.error('Error parsing SSE event:', e);
@@ -135,8 +142,10 @@ export default function App() {
       <Header
         teamMembers={teamMembers}
         activeMember={activeMember}
+        integrations={integrations || undefined}
         onSelectMember={handleSelectRole}
         onOpenAiEvaluator={() => setIsAiEvaluatorOpen(true)}
+        onOpenIntegrations={() => setActiveTab('integrations')}
         onReassignRoles={() => {
           localStorage.removeItem('nexus_role');
           setActiveMember(null);
@@ -159,6 +168,37 @@ export default function App() {
 
       {/* Main Tab Views Container */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        {activeTab === 'integrations' && (
+          <IntegrationsHub
+            integrations={
+              integrations || {
+                github: {
+                  enabled: true,
+                  repoUrl: 'https://github.com/Strakona/Sistema-Nexus-Gov',
+                  repoName: 'Strakona/Sistema-Nexus-Gov',
+                  branch: 'main',
+                  status: 'connected',
+                },
+                googleDrive: {
+                  enabled: true,
+                  folderUrl: 'https://drive.google.com/drive/folders/nexus-govtech-2026',
+                  status: 'connected',
+                  sharedDocs: [],
+                },
+                vercel: {
+                  enabled: true,
+                  projectName: 'sistema-nexus-gov',
+                  deploymentUrl: 'https://sistema-nexus-gov.vercel.app',
+                  environment: 'Production',
+                  status: 'ready',
+                },
+              }
+            }
+            activeMember={activeMember}
+            onRefresh={loadState}
+          />
+        )}
+
         {activeTab === 'code' && (
           <CodeHub
             codeFiles={codeFiles}

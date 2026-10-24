@@ -45,7 +45,40 @@ export default function App() {
       if (data.activeCheckpointId) {
         setActiveCheckpointId(data.activeCheckpointId);
       }
-      setTeamMembers(data.teamMembers || []);
+      if (data.teamMembers && data.teamMembers.length > 0) {
+        setTeamMembers(data.teamMembers);
+      } else {
+        setTeamMembers([
+          {
+            id: 'member-1',
+            name: 'Caio',
+            role: 'tech',
+            roleTitle: 'Tech Lead / Builder',
+            avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+            status: 'online',
+            activeTask: 'Desenvolvimento do MVP e protótipo interativo',
+            responsibilities: [
+              'Prototipagem rápida em código React/TypeScript',
+              'Estruturação da base de dados sintéticos LGPD',
+              'Unificação dos módulos e teste prático na plataforma',
+            ],
+          },
+          {
+            id: 'member-2',
+            name: 'Bruna',
+            role: 'ux',
+            roleTitle: 'Líder de Validação / UX',
+            avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+            status: 'online',
+            activeTask: 'Entrevistas com mentores e pesquisa de campo',
+            responsibilities: [
+              'Entrevistas com mentores e servidores em Cianorte',
+              'Aplicação do formulário relâmpago de validação',
+              'Garantia de acessibilidade, ética e LGPD no fluxo do usuário',
+            ],
+          },
+        ]);
+      }
       setTasks(data.tasks || []);
       setChatMessages(data.chatMessages || []);
       setCodeFiles(data.codeFiles || []);
@@ -65,33 +98,43 @@ export default function App() {
     loadState();
 
     // Subscribe to SSE real-time stream
-    const eventSource = new EventSource('/api/stream');
+    let eventSource: EventSource | null = null;
+    try {
+      eventSource = new EventSource('/api/stream');
 
-    eventSource.onmessage = (event) => {
-      try {
-        const data = JSON.parse(event.data);
-        if (data.type === 'STAGE_UPDATED') {
-          setActiveCheckpointId(data.payload.activeCheckpointId);
-        } else if (data.type === 'TASK_CREATED' || data.type === 'TASK_UPDATED') {
-          loadState();
-        } else if (data.type === 'CHAT_MESSAGE') {
-          setChatMessages((prev) => [...prev, data.payload]);
-        } else if (data.type === 'CODE_SAVED' || data.type === 'CODE_COMMITTED') {
-          loadState();
-        } else if (data.type === 'FEEDBACK_ADDED') {
-          loadState();
-        } else if (data.type === 'TEAM_UPDATED') {
-          loadState();
-        } else if (data.type === 'INTEGRATIONS_UPDATED') {
-          setIntegrations(data.payload);
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'STAGE_UPDATED') {
+            setActiveCheckpointId(data.payload.activeCheckpointId);
+          } else if (data.type === 'TASK_CREATED' || data.type === 'TASK_UPDATED') {
+            loadState();
+          } else if (data.type === 'CHAT_MESSAGE') {
+            setChatMessages((prev) => [...prev, data.payload]);
+          } else if (data.type === 'CODE_SAVED' || data.type === 'CODE_COMMITTED') {
+            loadState();
+          } else if (data.type === 'FEEDBACK_ADDED') {
+            loadState();
+          } else if (data.type === 'TEAM_UPDATED') {
+            loadState();
+          } else if (data.type === 'INTEGRATIONS_UPDATED') {
+            setIntegrations(data.payload);
+          }
+        } catch (e) {
+          console.error('Error parsing SSE event:', e);
         }
-      } catch (e) {
-        console.error('Error parsing SSE event:', e);
-      }
-    };
+      };
+
+      eventSource.onerror = () => {
+        // Close gracefully if serverless environment doesn't keep persistent stream open
+        eventSource?.close();
+      };
+    } catch (e) {
+      console.warn('SSE not supported or failed to connect:', e);
+    }
 
     return () => {
-      eventSource.close();
+      eventSource?.close();
     };
   }, []);
 
